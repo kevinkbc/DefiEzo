@@ -1,15 +1,15 @@
 package ezoqc.defi.kevin.model.tree;
 
 public class NoeudArbre {
-	private String expression;
+	private Object expression;
 	private NoeudArbre pere;
 	private NoeudArbre filsGauche;
 	private NoeudArbre filsDroite;
 	
-	public String getExpression() {
+	public Object getExpression() {
 		return expression;
 	}
-	public void setExpression(String expression) {
+	public void setExpression(Object expression) {
 		this.expression = expression;
 	}
 	public NoeudArbre getPere() {
