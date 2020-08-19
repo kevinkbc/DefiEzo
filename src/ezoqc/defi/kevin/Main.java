@@ -7,7 +7,7 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		CalculatriceService calculatriceService = new CalculatriceService();
-		String expression = "1 + 2";
+		String expression = "2.2 * 10 - 4 + 5 * 2";
 		try {
 			calculatriceService.creerArbreExpression(expression);
 			double resultat = calculatriceService.calculerArbre();

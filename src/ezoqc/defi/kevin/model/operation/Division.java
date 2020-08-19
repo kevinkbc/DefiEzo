@@ -6,7 +6,7 @@ public class Division implements IOperationBinaire{
 
 	@Override
 	public double calculer(double valeur1, double valeur2) {
-		return valeur1 + valeur2;
+		return valeur1 / valeur2;
 	}
 
 }

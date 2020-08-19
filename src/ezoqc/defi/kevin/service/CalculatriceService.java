@@ -14,7 +14,7 @@ import ezoqc.defi.kevin.model.tree.NoeudArbre;
 
 public class CalculatriceService {
 	String expressionInitiale;
-	
+	int position;
 	NoeudArbre racine = null;
 	
 	Map<Character, Operateur> operateurMap = new HashMap<Character, Operateur>();
@@ -31,20 +31,21 @@ public class CalculatriceService {
 		//trim to remove blanks
 		//expressionString = expressionString.trim();
 		//tokenize expression (doubles, negatives, operators, etc)
-		int i = 0;
-		while(i<expressionString.length()) {
-			char courrant = expressionString.charAt(i);
+		this.position = 0;
+		while(this.position<expressionString.length()) {
+			char courrant = expressionString.charAt(this.position);
 			
 			if(Character.isDigit(courrant)) {
-				this.racine = ajouterNoeud(racine, creerNoeudNumero(expressionString, i));
+				this.racine = ajouterNoeud(racine, creerNoeudNumero(expressionString, this.position));
 			} else if(isOperateur(courrant)) {
 				this.racine = ajouterNoeud(racine, creerNoeudOperateur(courrant));
+				position++;
 			} else if(courrant == ' ') {
-				
+				position++;
 			} else {
 				throw new Exception("caractere invalide!");
 			}
-			i++;
+			
 		}
 		//look for double numbers
 		
@@ -94,7 +95,7 @@ public class CalculatriceService {
 				} else if(nouveauNoeud.getExpression() instanceof Operateur){
 					
 					//int prioriteRacine = (Operateur) racine.getExpression()
-					if(racine.getPriorite() > nouveauNoeud.getPriorite()) {
+					if(nouveauNoeud.getPriorite() > racine.getPriorite()) {
 						racine.setFilsDroite(ajouterNoeud(racine.getFilsDroite(), nouveauNoeud));
 					} else {
 						//shift arbre operateur
@@ -117,6 +118,7 @@ public class CalculatriceService {
 		}
 		NoeudArbre noeud = new NoeudArbre();
 		noeud.setExpression(Double.parseDouble(expression.substring(positionDepart, position)));
+		this.position = position;
 		return noeud;
 	}
 	
