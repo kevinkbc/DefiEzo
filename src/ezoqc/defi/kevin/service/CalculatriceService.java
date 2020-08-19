@@ -1,5 +1,8 @@
 package ezoqc.defi.kevin.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ezoqc.defi.kevin.model.interfaces.IOperateur;
 import ezoqc.defi.kevin.model.operateur.Operateur;
 import ezoqc.defi.kevin.model.tree.NoeudArbre;
@@ -8,6 +11,8 @@ public class CalculatriceService {
 	String expressionInitiale;
 	
 	NoeudArbre racine = null;
+	
+	Map<Character, Operateur> operateurMap = new HashMap<Character, Operateur>();
 	
 	public NoeudArbre creerArbreExpression(String expressionString) throws Exception {
 		NoeudArbre racine = new NoeudArbre();
@@ -19,7 +24,9 @@ public class CalculatriceService {
 			char courrant = expressionString.charAt(i);
 			
 			if(Character.isDigit(courrant)) {
-				ajouterNoeud(racine, creerNoeudNumero(expressionString, i));
+				racine = ajouterNoeud(racine, creerNoeudNumero(expressionString, i));
+			} if(isOperateur(courrant)) {
+				racine = ajouterNoeud(racine, creerNoeudOperateur(courrant));
 			}
 		}
 		//look for double numbers
@@ -43,10 +50,14 @@ public class CalculatriceService {
 					//check racine pere
 					if(racine.getPere() == null) {
 						nouveauNoeud.setFilsGauche(racine);
+						racine.setPere(nouveauNoeud);
 						return nouveauNoeud;
 					} else {
 						NoeudArbre pere = racine.getPere();
-						pere.setFilsGauche(nouveauNoeud);
+						pere.setFilsDroite(nouveauNoeud);
+						nouveauNoeud.setPere(pere);
+						racine.setPere(nouveauNoeud);
+						return nouveauNoeud;
 					}
 				}
 			} else if(racine.getExpression() instanceof Operateur){
@@ -55,11 +66,24 @@ public class CalculatriceService {
 						racine.setFilsGauche(nouveauNoeud);
 					} else if(racine.getFilsDroite() == null) {
 						racine.setFilsDroite(nouveauNoeud);
-					} else {
+					} else if(racine.getFilsDroite().getExpression() instanceof Operateur) {
+						//seulement ajouter numero, pas besoin de mise a jour le racine
+						ajouterNoeud(racine.getFilsDroite(), nouveauNoeud);
+					}
+					  else {
 						throw new Exception("Expression invalide! 3 numeros pour une operateur binaire!");
 					}
+					return racine;
 				} else if(nouveauNoeud.getExpression() instanceof Operateur){
-					//shift operator tree
+					
+					//int prioriteRacine = (Operateur) racine.getExpression()
+					if(racine.getPriorite() > nouveauNoeud.getPriorite()) {
+						racine.setFilsDroite(ajouterNoeud(racine.getFilsDroite(), nouveauNoeud));
+					} else {
+						//shift arbre operateur
+						nouveauNoeud.setFilsGauche(racine);
+						return nouveauNoeud;
+					}
 				}
 			}
 			//racine = ajouterNoeud(racine, nouveauNoeud);
@@ -79,20 +103,28 @@ public class CalculatriceService {
 		return noeud;
 	}
 	
-	public NoeudArbre creerNoeudOperateur(String expression, int positionDepart) {
-		int position = positionDepart;
+	public NoeudArbre creerNoeudOperateur(char courrant) {
+		//int position = positionDepart;
 		/*
 		 * while(position < expression.length() && (expression.charAt(position) == '.'||
 		 * Character.isDigit(expression.charAt(position)))) { position++; }
 		 */
+		Operateur op;
 		NoeudArbre noeud = new NoeudArbre();
+		noeud.setExpression(this.operateurMap.get(courrant));
 		//noeud.setExpression(Double.parseDouble(expression.substring(positionDepart, position)));
 		return noeud;
 	}
 	
 	public boolean isOperateur(char character) {
+		if(this.operateurMap.containsKey(character));
 		return true;
 	}
 	
-	
+	public void remplirMap() {
+		this.operateurMap.put('+', new Operateur("+",1));
+		this.operateurMap.put('-', new Operateur("-",1));
+		this.operateurMap.put('*', new Operateur("*",2));
+		this.operateurMap.put('/', new Operateur("/",2));
+	}
 }

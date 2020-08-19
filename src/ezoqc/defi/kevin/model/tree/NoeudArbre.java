@@ -1,5 +1,7 @@
 package ezoqc.defi.kevin.model.tree;
 
+import ezoqc.defi.kevin.model.operateur.Operateur;
+
 public class NoeudArbre {
 	private Object expression;
 	private NoeudArbre pere;
@@ -31,5 +33,11 @@ public class NoeudArbre {
 		this.filsDroite = filsDroite;
 	}
 	
+	public int getPriorite() {
+		if (this.getExpression() instanceof Operateur) {
+			Operateur op = (Operateur)this.getExpression();
+			return op.getPriorite();
+		} else return 0;
+	}
 	
 }
