@@ -4,7 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ezoqc.defi.kevin.model.interfaces.IOperateur;
+import ezoqc.defi.kevin.model.interfaces.IOperationBinaire;
 import ezoqc.defi.kevin.model.operateur.Operateur;
+import ezoqc.defi.kevin.model.operation.Addition;
+import ezoqc.defi.kevin.model.operation.Division;
+import ezoqc.defi.kevin.model.operation.Multiplication;
+import ezoqc.defi.kevin.model.operation.Soustraction;
 import ezoqc.defi.kevin.model.tree.NoeudArbre;
 
 public class CalculatriceService {
@@ -14,20 +19,32 @@ public class CalculatriceService {
 	
 	Map<Character, Operateur> operateurMap = new HashMap<Character, Operateur>();
 	
+	
+	
+	public CalculatriceService() {
+		remplirMap();
+	}
+
 	public NoeudArbre creerArbreExpression(String expressionString) throws Exception {
-		NoeudArbre racine = new NoeudArbre();
+		//NoeudArbre racine = new NoeudArbre();
 		
 		//trim to remove blanks
 		//expressionString = expressionString.trim();
-		//tokenize expression (doubles, negatives, operators, etc) 
-		for(int i = 0;i<expressionString.length();i++) {
+		//tokenize expression (doubles, negatives, operators, etc)
+		int i = 0;
+		while(i<expressionString.length()) {
 			char courrant = expressionString.charAt(i);
 			
 			if(Character.isDigit(courrant)) {
-				racine = ajouterNoeud(racine, creerNoeudNumero(expressionString, i));
-			} if(isOperateur(courrant)) {
-				racine = ajouterNoeud(racine, creerNoeudOperateur(courrant));
+				this.racine = ajouterNoeud(racine, creerNoeudNumero(expressionString, i));
+			} else if(isOperateur(courrant)) {
+				this.racine = ajouterNoeud(racine, creerNoeudOperateur(courrant));
+			} else if(courrant == ' ') {
+				
+			} else {
+				throw new Exception("caractere invalide!");
 			}
+			i++;
 		}
 		//look for double numbers
 		
@@ -117,14 +134,53 @@ public class CalculatriceService {
 	}
 	
 	public boolean isOperateur(char character) {
-		if(this.operateurMap.containsKey(character));
-		return true;
+		return this.operateurMap.containsKey(character);
 	}
 	
+	//utiliser enum
 	public void remplirMap() {
 		this.operateurMap.put('+', new Operateur("+",1));
 		this.operateurMap.put('-', new Operateur("-",1));
 		this.operateurMap.put('*', new Operateur("*",2));
 		this.operateurMap.put('/', new Operateur("/",2));
+	}
+	
+	public double calculerNoeud(NoeudArbre noeud) {
+		
+		if(noeud.getExpression() instanceof Double) {
+			return (double) noeud.getExpression();
+		} else {
+			Operateur op = (Operateur) noeud.getExpression();
+			IOperationBinaire operation = null;
+			switch (op.getSymbole()) {
+			case "+":
+				operation = new Addition();
+				break;
+			
+			case "-":
+				operation = new Soustraction();
+				break;
+				
+			case "*":
+				operation = new Multiplication();
+				break;
+				
+			case "/":
+				operation = new Division();
+				break;	
+			default:
+				break;
+			}
+			if(operation != null) {
+				return operation.calculer(calculerNoeud(noeud.getFilsGauche()),
+						  calculerNoeud(noeud.getFilsDroite()));
+			} else return 0.0;
+			
+		}
+				
+	}
+	
+	public double calculerArbre() {
+		return calculerNoeud(this.racine);
 	}
 }
